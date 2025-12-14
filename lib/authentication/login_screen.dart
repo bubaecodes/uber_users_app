@@ -10,8 +10,8 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
 
-  TextEditingController emailEditingController = TextEditingController();
-  TextEditingController passwordEditingController = TextEditingController();
+  TextEditingController emailTextEditingController = TextEditingController();
+  TextEditingController passwordTextEditingController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   children: [
                     TextField(
-                      controller: emailEditingController,
+                      controller: emailTextEditingController,
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
                           labelText: 'User Email',
@@ -54,7 +54,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     SizedBox(height: screenHeight / 40),
                     TextField(
-                      controller: passwordEditingController,
+                      controller: passwordTextEditingController,
                       keyboardType: TextInputType.text,
                       obscureText: true,
                       decoration: InputDecoration(
@@ -72,7 +72,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     SizedBox(height: screenHeight / 30),
 
                     ElevatedButton(
-                        onPressed: (){},
+                        onPressed: (){
+
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.purple,
                           padding: EdgeInsets.symmetric(

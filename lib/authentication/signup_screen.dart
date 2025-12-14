@@ -1,6 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:uber_users_app/authentication/login_screen.dart';
-import 'package:uber_users_app/methods/common_methods.dart';
+import 'package:uber_users_app/pages/home_page.dart';
+import 'package:uber_users_app/widgets/loading_dialog.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -11,32 +14,130 @@ class SignupScreen extends StatefulWidget {
 
 class _SignupScreenState extends State<SignupScreen> {
 
-  TextEditingController userNameEditingController = TextEditingController();
-  TextEditingController emailEditingController = TextEditingController();
-  TextEditingController passwordEditingController = TextEditingController();
-  TextEditingController userPhoneEditingController = TextEditingController();
+  TextEditingController userNameTextEditingController = TextEditingController();
+  TextEditingController emailTextEditingController = TextEditingController();
+  TextEditingController passwordTextEditingController = TextEditingController();
+  TextEditingController userPhoneTextEditingController = TextEditingController();
 
-  CommonMethods cMethods = CommonMethods();
-
-  checkIfNetworkIsAvailable(){
-    cMethods.checkConnectivity(context);
-
-    signUpFormValidation();
-  }
+  // CommonMethods cMethods = CommonMethods();
+  //
+  // checkIfNetworkIsAvailable(){
+  //   cMethods.checkConnectivity(context);
+  //
+  //   signUpFormValidation();
+  // }
 
   signUpFormValidation(){
-    if (userNameEditingController.text.trim().length < 3) {
-      cMethods.displaySnackBar('Your name must be at least 4 or more characters.', context);
-    } else if(userNameEditingController.text.trim().length < 7) {
-      cMethods.displaySnackBar('Your name must be at least 8 or more characters.', context);
-    } else if(!emailEditingController.text.contains("@")){
-      cMethods.displaySnackBar('Please enter a valid email.', context);
-    } else if(passwordEditingController.text.trim().length < 5) {
-      cMethods.displaySnackBar('Your name must be at least 6 or more characters', context);
+    if (userNameTextEditingController.text.trim().length < 5) {
+      displaySnackBar('Your name must be at least 6 or more characters.', context);
+      return;
+    } else if(!emailTextEditingController.text.contains("@")){
+      displaySnackBar('Please enter a valid email.', context);
+      return;
+    } else if(passwordTextEditingController.text.trim().length < 5) {
+      displaySnackBar('Your password must be at least 6 or more characters', context);
+      return;
     } else {
       /// register user
-
+      registerNewUser();
     }
+  }
+
+  // signUpFormValidation(){
+  //   if (userNameTextEditingController.text.trim().length < 3) {
+  //     displaySnackBar('Your name must be at least 4 or more characters.', context);
+  //   } else if(userNameTextEditingController.text.trim().length < 7) {
+  //     displaySnackBar('Your name must be at least 8 or more characters.', context);
+  //   } else if(!emailTextEditingController.text.contains("@")){
+  //     displaySnackBar('Please enter a valid email.', context);
+  //   } else if(passwordTextEditingController.text.trim().length < 5) {
+  //     displaySnackBar('Your name must be at least 6 or more characters', context);
+  //   } else {
+  //     /// register user
+  //     registerNewUser();
+  //   }
+  // }
+
+  void displaySnackBar(String message, BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.black87,
+        behavior: SnackBarBehavior.floating,
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
+  // registerNewUser() async {
+  //   showDialog(
+  //       context: context,
+  //       barrierDismissible: false,
+  //       builder: (BuildContext context) => LoadingDialog(messageText: 'Registering your account...'),
+  //   );
+  //
+  //   final User? userFirebase = (
+  //     await FirebaseAuth.instance.createUserWithEmailAndPassword(
+  //         email: emailTextEditingController.text.trim(),
+  //         password: passwordTextEditingController.text.trim(),
+  //     ).catchError((errorMessage) {
+  //       displaySnackBar(errorMessage.toString(), context);
+  //     })
+  //   ).user;
+  // }
+
+  Future <UserCredential?> registerNewUser() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) => LoadingDialog(messageText: 'Registering your account...'),
+    );
+    print('first');
+
+    try{
+      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: emailTextEditingController.text.trim(),
+        password: passwordTextEditingController.text.trim(),
+      );
+
+      print('second');
+      /// save user data in realtime database
+      DatabaseReference userRef = FirebaseDatabase.instance
+          .ref()
+          .child('users')
+          .child(userCredential.user!.uid);
+
+      print('third');
+
+      Map userDataMap = {
+        "name": userNameTextEditingController.text.trim(),
+        "email": emailTextEditingController.text.trim(),
+        "phone": userPhoneTextEditingController.text.trim(),
+        "id": userCredential.user!.uid,
+        "blockStatus": "no",
+      };
+      print('fourth');
+      await userRef.set(userDataMap);
+
+      print('fifth');
+
+      Navigator.pop(context);
+      displaySnackBar('Account registered successfully!', context);
+      
+      Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => HomePage())
+      );
+
+      return userCredential;
+
+    } catch (e) {
+      Navigator.pop(context);
+      displaySnackBar(e.toString(), context);
+      return null;
+    }
+
+
   }
 
   @override
@@ -65,7 +166,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 child: Column(
                   children: [
                     TextField(
-                      controller: userNameEditingController,
+                      controller: userNameTextEditingController,
                       keyboardType: TextInputType.text,
                       decoration: InputDecoration(
                         labelText: 'User Name',
@@ -80,7 +181,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                     SizedBox(height: screenHeight / 40),
                     TextField(
-                      controller: userPhoneEditingController,
+                      controller: userPhoneTextEditingController,
                       keyboardType: TextInputType.text,
                       decoration: InputDecoration(
                         labelText: 'User Phone',
@@ -95,7 +196,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                     SizedBox(height: screenHeight / 40),
                     TextField(
-                      controller: emailEditingController,
+                      controller: emailTextEditingController,
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
                           labelText: 'User Email',
@@ -110,7 +211,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                     SizedBox(height: screenHeight / 40),
                     TextField(
-                      controller: passwordEditingController,
+                      controller: passwordTextEditingController,
                       keyboardType: TextInputType.text,
                       obscureText: true,
                       decoration: InputDecoration(
@@ -129,7 +230,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
                     ElevatedButton(
                       onPressed: (){
-                        checkIfNetworkIsAvailable();
+                        signUpFormValidation();
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.purple,
