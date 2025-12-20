@@ -1,5 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:uber_users_app/authentication/signup_screen.dart';
+import 'package:uber_users_app/global/global_var.dart';
+import 'package:uber_users_app/pages/home_page.dart';
+import 'package:uber_users_app/widgets/loading_dialog.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -12,6 +17,76 @@ class _LoginScreenState extends State<LoginScreen> {
 
   TextEditingController emailTextEditingController = TextEditingController();
   TextEditingController passwordTextEditingController = TextEditingController();
+
+  signInFormValidation(){
+    if(!emailTextEditingController.text.contains('@')){
+      displaySnackBar('Please enter a valid email', context);
+    } else if (passwordTextEditingController.text.trim().length < 5){
+      displaySnackBar('Please enter a stronger password', context);
+    } else{
+      signInUser();
+    }
+  }
+
+  Future<UserCredential?> signInUser() async {
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) => LoadingDialog(messageText: 'Logging you in ...'),
+    );
+
+    try{
+      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: emailTextEditingController.text.trim(),
+          password: passwordTextEditingController.text.trim(),
+      );
+
+      /// save user data in realtime database
+      DatabaseReference userRef = FirebaseDatabase.instance
+          .ref()
+          .child('users')
+          .child(userCredential.user!.uid);
+      userRef.once().then((snap) {
+        if(snap.snapshot.value != null){
+          if((snap.snapshot.value as Map)['blockStatus'] == "no"){
+            userName = (snap.snapshot.value as Map)['name'];
+            Navigator.push(context, MaterialPageRoute(builder: (e)=> HomePage()));
+          } else{
+            FirebaseAuth.instance.signOut();
+            displaySnackBar('Your are blocked. Contact admin: bubae@gmail.com', context);
+          }
+        } else {
+          displaySnackBar('Please create an account.', context);
+        }
+      });
+    
+
+      Navigator.pop(context);
+      displaySnackBar('Account registered successfully!', context);
+
+      // Navigator.push(
+      //     context,
+      //     MaterialPageRoute(builder: (_) => HomePage())
+      // );
+
+      return userCredential;
+    } catch (e) {
+      Navigator.pop(context);
+      displaySnackBar(e.toString(), context);
+      return null;
+    }
+  }
+
+  void displaySnackBar(String message, BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.black87,
+        behavior: SnackBarBehavior.floating,
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +148,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     ElevatedButton(
                         onPressed: (){
-
+                          signInFormValidation();
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.purple,

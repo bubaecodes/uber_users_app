@@ -19,13 +19,6 @@ class _SignupScreenState extends State<SignupScreen> {
   TextEditingController passwordTextEditingController = TextEditingController();
   TextEditingController userPhoneTextEditingController = TextEditingController();
 
-  // CommonMethods cMethods = CommonMethods();
-  //
-  // checkIfNetworkIsAvailable(){
-  //   cMethods.checkConnectivity(context);
-  //
-  //   signUpFormValidation();
-  // }
 
   signUpFormValidation(){
     if (userNameTextEditingController.text.trim().length < 5) {
@@ -43,20 +36,6 @@ class _SignupScreenState extends State<SignupScreen> {
     }
   }
 
-  // signUpFormValidation(){
-  //   if (userNameTextEditingController.text.trim().length < 3) {
-  //     displaySnackBar('Your name must be at least 4 or more characters.', context);
-  //   } else if(userNameTextEditingController.text.trim().length < 7) {
-  //     displaySnackBar('Your name must be at least 8 or more characters.', context);
-  //   } else if(!emailTextEditingController.text.contains("@")){
-  //     displaySnackBar('Please enter a valid email.', context);
-  //   } else if(passwordTextEditingController.text.trim().length < 5) {
-  //     displaySnackBar('Your name must be at least 6 or more characters', context);
-  //   } else {
-  //     /// register user
-  //     registerNewUser();
-  //   }
-  // }
 
   void displaySnackBar(String message, BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -69,22 +48,6 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
-  // registerNewUser() async {
-  //   showDialog(
-  //       context: context,
-  //       barrierDismissible: false,
-  //       builder: (BuildContext context) => LoadingDialog(messageText: 'Registering your account...'),
-  //   );
-  //
-  //   final User? userFirebase = (
-  //     await FirebaseAuth.instance.createUserWithEmailAndPassword(
-  //         email: emailTextEditingController.text.trim(),
-  //         password: passwordTextEditingController.text.trim(),
-  //     ).catchError((errorMessage) {
-  //       displaySnackBar(errorMessage.toString(), context);
-  //     })
-  //   ).user;
-  // }
 
   Future <UserCredential?> registerNewUser() async {
     showDialog(

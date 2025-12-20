@@ -51,6 +51,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart'; // for kIsWeb
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:uber_users_app/authentication/login_screen.dart';
 
 void main() async {
@@ -83,6 +84,12 @@ void main() async {
       rethrow; // unexpected errors
     }
   }
+  
+  await Permission.locationWhenInUse.isDenied.then((valueOfPermission){
+    if(!kIsWeb){
+      Permission.locationWhenInUse.request();
+    }
+  });
 
   runApp(const MyApp());
 }
@@ -102,3 +109,6 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
+
+///----------------remember to delete line 1-15 in android build gradle-------------////
