@@ -110,5 +110,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
+/// geolocator dependency was added and it threw an error
 
 ///----------------remember to delete line 1-15 in android build gradle-------------////
